@@ -51,10 +51,11 @@ import {
   imports: [
     ConfigModule.forRoot()
   ],
+  controllers: [
+    // MCP Controllers (NitroStack SDK automatically extracts @Tool, @Resource, @Prompt, @Widget handlers)
+    ConverraController
+  ],
   providers: [
-    // MCP Controller (Registers all @Tool, @Resource, @Prompt, @Widget handlers for NitroStack Studio)
-    ConverraController,
-
     // System Telemetry
     SystemHealthCheck,
 
