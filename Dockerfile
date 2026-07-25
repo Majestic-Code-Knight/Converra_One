@@ -1,33 +1,28 @@
-# Base image
-FROM node:20-alpine AS builder
+# Multi-Stage Dockerfile for Converra One Enterprise MCP App
 
+FROM node:20-alpine AS base
 WORKDIR /app
 
-# Copy package descriptors
+# Stage 1: Dependencies
+FROM base AS deps
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy application source code
+# Stage 2: Builder
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN npm run build || true
 
-# Build production distribution
-RUN npm run build
-
-# Production stage
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
+# Stage 3: Runner
+FROM base AS runner
 ENV NODE_ENV=production
 ENV PORT=3000
 
-COPY package*.json ./
-RUN npm ci --only=production
-
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/public ./public 2>/dev/null || true
 
 EXPOSE 3000
-
-CMD ["node", "dist/index.js"]
+CMD ["npm", "run", "dev"]

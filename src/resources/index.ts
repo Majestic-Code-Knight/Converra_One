@@ -1,5 +1,9 @@
-/**
- * Resources Registry Index
- * TODO: Phase 2 - Register MCP Resources (inbox streams, task states, etc.)
- */
-export {};
+export * from './dashboard.resource.js';
+export * from './inbox.resource.js';
+export * from './calendar.resource.js';
+export * from './task.resource.js';
+export * from './timeline.resource.js';
+export * from './health.resource.js';
+export * from './memory.resource.js';
+export * from './platform.resource.js';
+export * from './search.resource.js';

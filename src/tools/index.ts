@@ -1,5 +1,9 @@
-/**
- * Tools Registry Index
- * TODO: Phase 2 - Register MCP Tools for Agent execution
- */
-export {};
+export * from './getUnifiedInbox.tool.js';
+export * from './getDailyBriefing.tool.js';
+export * from './searchCommunications.tool.js';
+export * from './replyToMessage.tool.js';
+export * from './extractTasks.tool.js';
+export * from './runWorkflow.tool.js';
+export * from './createCalendarReminder.tool.js';
+export * from './getPlatformStatus.tool.js';
+export * from './refreshPlatforms.tool.js';

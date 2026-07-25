@@ -1,16 +1,22 @@
 # Dependencies
 node_modules/
 src/widgets/node_modules/
+*node_modules*
+*__trash*
 
 # Build outputs
 dist/
 src/widgets/.next/
 src/widgets/out/
+.next/
 
-# Environment files
+# Environment files & Secrets
 .env
 .env.local
 .env.*.local
+*.json.secret
+gmail_credentials.json
+calendar_credentials.json
 
 # IDE
 .idea/
@@ -22,6 +28,7 @@ src/widgets/out/
 # OS files
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log

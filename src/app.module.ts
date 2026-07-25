@@ -1,12 +1,39 @@
 import { McpApp, Module, ConfigModule } from '@nitrostack/core';
 import { SystemHealthCheck } from './health/system.health.js';
+import { ConverraController } from './controllers/Converra.controller.js';
+
+import {
+  DashboardWorkflowService,
+  InboxWorkflowService,
+  SearchWorkflowService,
+  ReplyWorkflowService,
+  CalendarWorkflowService,
+  TaskWorkflowService
+} from './workflows/index.js';
+
+import {
+  CollectorAgent,
+  PriorityAgent,
+  SummaryAgent,
+  TaskAgent,
+  ReplyAgent,
+  CalendarAgent,
+  MemoryAgent,
+  SearchAgent,
+  OrchestratorAgent
+} from './modules/index.js';
+
+import {
+  ConnectorManagerService,
+  AgentEventBusService,
+  AgentMemoryCacheService,
+  AgentHealthMonitorService
+} from './services/index.js';
 
 /**
- * Converra One - Root Application Module
+ * Converra One - Root Enterprise Application Module
  * 
- * Main module that bootstraps the Converra One MCP server.
- * Registers widgets, resources, tools, health checks, and shared modules.
- * Integrations and AI agent modules are scaffolded and ready to be plugged in for Phase 2.
+ * Bootstraps the Converra One production MCP Server & Agentic AI Orchestration engine.
  */
 @McpApp({
   module: AppModule,
@@ -23,12 +50,38 @@ import { SystemHealthCheck } from './health/system.health.js';
   description: 'Converra One - Intelligent Unified Communication Workspace',
   imports: [
     ConfigModule.forRoot()
-    // Integration modules will be enabled in Phase 2:
-    // GmailModule, SlackModule, DiscordModule, GithubModule, NotionModule, CalendarModule
   ],
   providers: [
-    // Health Checks
-    SystemHealthCheck
+    // MCP Controller (Registers all @Tool, @Resource, @Prompt, @Widget handlers for NitroStack Studio)
+    ConverraController,
+
+    // System Telemetry
+    SystemHealthCheck,
+
+    // Core Infrastructure Services
+    ConnectorManagerService,
+    AgentEventBusService,
+    AgentMemoryCacheService,
+    AgentHealthMonitorService,
+
+    // Specialized AI Agents
+    CollectorAgent,
+    PriorityAgent,
+    SummaryAgent,
+    TaskAgent,
+    ReplyAgent,
+    CalendarAgent,
+    MemoryAgent,
+    SearchAgent,
+    OrchestratorAgent,
+
+    // Workflow Services
+    DashboardWorkflowService,
+    InboxWorkflowService,
+    SearchWorkflowService,
+    ReplyWorkflowService,
+    CalendarWorkflowService,
+    TaskWorkflowService
   ]
 })
 export class AppModule {}
