@@ -1,8 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK_NOTIFICATIONS } from '../mockData.js';
-import { Notification } from '../../shared/interfaces/Notification.interface.js';
+import { MOCK_NOTIFICATIONS } from '../mockData';
+import { Notification } from '../../shared/interfaces/Notification.interface';
+
+
+function formatTimeString(dateInput: Date | string): string {
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '';
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+}
 
 export interface NotificationsWidgetProps {
   notifications?: Notification[];
@@ -106,7 +117,7 @@ export const NotificationsWidget: React.FC<NotificationsWidgetProps> = ({
             </div>
 
             <span style={{ fontSize: '10px', color: '#64748b', whiteSpace: 'nowrap' }}>
-              {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {formatTimeString(n.createdAt)}
             </span>
           </div>
         ))}

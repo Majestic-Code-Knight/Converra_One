@@ -1,1 +1,1 @@
-export * from './SearchWidget.js';
+export * from './SearchWidget';

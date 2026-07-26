@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { MOCK_MESSAGES } from '../mockData.js';
-import { Message } from '../../shared/interfaces/Message.interface.js';
-import { PriorityLevel } from '../../shared/enums/priority.enum.js';
+import { MOCK_MESSAGES } from '../mockData';
+import { Message } from '../../shared/interfaces/Message.interface';
+import { PriorityLevel } from '../../shared/enums/priority.enum';
 
 export interface PriorityMessagesWidgetProps {
   messages?: Message[];

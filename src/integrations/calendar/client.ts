@@ -3,6 +3,8 @@ import { AuthenticationManagerService } from '../../services/AuthenticationManag
 import { PlatformType } from '../../shared/enums/platform.enum.js';
 import { GoogleCalendarEventRaw } from './types.js';
 
+import { DemoStoreService } from '../../services/DemoStore.service.js';
+
 export class GoogleCalendarClient {
   private rateLimiter: RateLimiterService;
   private authManager: AuthenticationManagerService;
@@ -14,21 +16,23 @@ export class GoogleCalendarClient {
 
   public async fetchEvents(): Promise<GoogleCalendarEventRaw[]> {
     return this.rateLimiter.executeWithRateLimit(PlatformType.CALENDAR, async () => {
+      const enableDemo = process.env.ENABLE_DEMO_MODE === 'true';
       const creds = this.authManager.getCredentials(PlatformType.CALENDAR);
-      if (!creds.isAuthorized) {
-        return [
-          {
-            id: 'evt-01',
-            summary: 'Prof. Vance CS340 Project Architecture Call',
-            description: '15-min sync to review Raft consensus parameters.',
-            start: { dateTime: '2026-07-25T15:00:00Z' },
-            end: { dateTime: '2026-07-25T15:15:00Z' },
-            location: 'Google Meet',
-            hangoutLink: 'https://meet.google.com/abc-defg-hij',
-            organizer: { email: 'e.vance@stanford.edu', displayName: 'Dr. Evelyn Vance' }
-          }
-        ];
+
+      if (enableDemo || !creds.isAuthorized) {
+        const events = DemoStoreService.getInstance().getCalendarEvents();
+        return events.map(e => ({
+          id: e.id,
+          summary: e.title,
+          description: e.description,
+          start: { dateTime: new Date(e.startTime).toISOString() },
+          end: { dateTime: new Date(e.endTime).toISOString() },
+          location: e.location,
+          hangoutLink: e.meetingUrl,
+          organizer: { email: e.organizer?.email || 'e.vance@stanford.edu', displayName: e.organizer?.name || 'Organizer' }
+        }));
       }
+
 
       const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
         headers: { Authorization: `Bearer ${creds.accessToken}` }

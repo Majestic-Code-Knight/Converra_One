@@ -1,10 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK_TASKS } from '../mockData.js';
-import { Task } from '../../shared/interfaces/Task.interface.js';
-import { TaskStatus } from '../../shared/enums/task.enum.js';
-import { PriorityLevel } from '../../shared/enums/priority.enum.js';
+import { MOCK_TASKS } from '../mockData';
+import { Task } from '../../shared/interfaces/Task.interface';
+import { TaskStatus } from '../../shared/enums/task.enum';
+import { PriorityLevel } from '../../shared/enums/priority.enum';
+
+function formatTimeString(dateInput: Date | string): string {
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '';
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+}
 
 export interface TaskWidgetProps {
   tasks?: Task[];
@@ -134,7 +144,7 @@ export const TaskWidget: React.FC<TaskWidgetProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                 {t.dueDate && (
                   <span style={{ fontSize: '11px', color: '#fca5a5', background: 'rgba(239, 68, 68, 0.1)', padding: '2px 8px', borderRadius: '6px', fontWeight: 500 }}>
-                    📅 {new Date(t.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    📅 {formatTimeString(t.dueDate)}
                   </span>
                 )}
                 <span style={{ fontSize: '10px', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>

@@ -1,1 +1,1 @@
-export * from './AgentActivityWidget.js';
+export * from './AgentActivityWidget';

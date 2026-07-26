@@ -5,6 +5,8 @@ import { CalendarEvent } from '../../shared/interfaces/CalendarEvent.interface.j
 import { PlatformType } from '../../shared/enums/platform.enum.js';
 import { AgentHealthMonitorService } from '../../services/AgentHealthMonitor.service.js';
 
+import { DemoStoreService } from '../../services/DemoStore.service.js';
+
 export interface CalendarAgentInput {
   action: 'GET_EVENTS' | 'CREATE_REMINDER';
   title?: string;
@@ -31,47 +33,29 @@ export class CalendarAgent extends BaseAgent<CalendarAgentInput, CalendarAgentRe
   public async execute(input: CalendarAgentInput): Promise<AgentResponse<CalendarAgentResult>> {
     const startTime = Date.now();
     try {
-      const mockEvents: CalendarEvent[] = [
-        {
-          id: 'evt-01',
-          title: 'Prof. Vance CS340 Project Architecture Call',
-          description: '15-min sync to review Raft consensus parameters and blueprint updates.',
-          startTime: new Date('2026-07-25T15:00:00Z'),
-          endTime: new Date('2026-07-25T15:15:00Z'),
-          isAllDay: false,
-          location: 'Google Meet',
-          meetingUrl: 'https://meet.google.com/abc-defg-hij',
-          organizer: { name: 'Dr. Evelyn Vance', email: 'e.vance@stanford.edu', responseStatus: 'accepted' },
-          attendees: [{ name: 'Dr. Evelyn Vance', email: 'e.vance@stanford.edu' }],
-          platform: PlatformType.CALENDAR
-        }
-      ];
-
+      const demoStore = DemoStoreService.getInstance();
       let createdEvent: CalendarEvent | undefined;
 
       if (input.action === 'CREATE_REMINDER' && input.title) {
-        createdEvent = {
-          id: `evt-${Date.now()}`,
+        createdEvent = demoStore.addCalendarEvent({
           title: input.title,
           description: 'AI Generated Calendar Reminder',
           startTime: input.startTime || new Date(),
-          endTime: new Date((input.startTime || new Date()).getTime() + 1800000),
-          isAllDay: false,
-          attendees: [],
-          platform: PlatformType.CALENDAR
-        };
-        mockEvents.push(createdEvent);
+          endTime: new Date((input.startTime || new Date()).getTime() + 1800000)
+        });
       }
 
+      const events = demoStore.getCalendarEvents();
       const duration = Date.now() - startTime;
       this.healthMonitor.recordExecution(this.name, duration, true);
 
       return this.createSuccessResponse(
-        { events: mockEvents, createdEvent },
+        { events, createdEvent },
         duration,
         input.action === 'CREATE_REMINDER' ? 'Calendar reminder created' : 'Fetched today schedule'
       );
     } catch (err: unknown) {
+
       const duration = Date.now() - startTime;
       const errorMsg = err instanceof Error ? err.message : String(err);
       this.healthMonitor.recordExecution(this.name, duration, false, errorMsg);

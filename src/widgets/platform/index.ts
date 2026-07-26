@@ -1,1 +1,1 @@
-export * from './PlatformStatusWidget.js';
+export * from './PlatformStatusWidget';

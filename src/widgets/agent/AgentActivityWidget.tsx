@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MOCK_AGENT_LOGS, AgentExecutionLog } from '../mockData.js';
+import { MOCK_AGENT_LOGS, AgentExecutionLog } from '../mockData';
 
 export interface AgentActivityWidgetProps {
   logs?: AgentExecutionLog[];

@@ -1,15 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export interface SettingsWidgetProps {
   initialTab?: 'theme' | 'platforms' | 'notifications' | 'account';
+  currentTheme?: 'dark' | 'light' | 'system';
+  onThemeChange?: (theme: 'dark' | 'light' | 'system') => void;
 }
 
 export const SettingsWidget: React.FC<SettingsWidgetProps> = ({
-  initialTab = 'theme'
+  initialTab = 'theme',
+  currentTheme: propTheme,
+  onThemeChange
 }) => {
   const [activeTab, setActiveTab] = useState<'theme' | 'platforms' | 'notifications' | 'account'>(initialTab);
+  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'system'>('dark');
+
+  useEffect(() => {
+    if (propTheme) {
+      setThemeMode(propTheme);
+    } else {
+      const saved = localStorage.getItem('converra_theme') as 'dark' | 'light' | 'system' | null;
+      if (saved) setThemeMode(saved);
+    }
+  }, [propTheme]);
+
+  const handleSelectTheme = (newTheme: 'dark' | 'light' | 'system') => {
+    setThemeMode(newTheme);
+    localStorage.setItem('converra_theme', newTheme);
+    if (onThemeChange) {
+      onThemeChange(newTheme);
+    }
+  };
 
   return (
     <div
@@ -67,17 +89,55 @@ export const SettingsWidget: React.FC<SettingsWidgetProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <h4 style={{ margin: 0, fontSize: '14px', color: '#f1f5f9' }}>Theme Customization</h4>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
-            <div style={{ background: 'rgba(56, 189, 248, 0.1)', border: '2px solid #38bdf8', borderRadius: '12px', padding: '14px', cursor: 'pointer' }}>
+            <div
+              onClick={() => handleSelectTheme('dark')}
+              style={{
+                background: themeMode === 'dark' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                border: themeMode === 'dark' ? '2px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
               <div style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc' }}>🌙 Dark Glassmorphism</div>
-              <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '4px' }}>Enterprise Dark Mode (Active)</div>
+              <div style={{ fontSize: '11px', color: themeMode === 'dark' ? '#38bdf8' : '#64748b', marginTop: '4px' }}>
+                {themeMode === 'dark' ? 'Enterprise Dark Mode (Active)' : 'Enterprise Dark Mode'}
+              </div>
             </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '14px', opacity: 0.6 }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#94a3b8' }}>☀️ Light Mode</div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Clean Day Theme</div>
+
+            <div
+              onClick={() => handleSelectTheme('light')}
+              style={{
+                background: themeMode === 'light' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                border: themeMode === 'light' ? '2px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc' }}>☀️ Light Mode</div>
+              <div style={{ fontSize: '11px', color: themeMode === 'light' ? '#38bdf8' : '#64748b', marginTop: '4px' }}>
+                {themeMode === 'light' ? 'Clean Day Theme (Active)' : 'Clean Day Theme'}
+              </div>
             </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px', padding: '14px', opacity: 0.6 }}>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#94a3b8' }}>🖥️ System Default</div>
-              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>Match OS Appearance</div>
+
+            <div
+              onClick={() => handleSelectTheme('system')}
+              style={{
+                background: themeMode === 'system' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                border: themeMode === 'system' ? '2px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '12px',
+                padding: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc' }}>🖥️ System Default</div>
+              <div style={{ fontSize: '11px', color: themeMode === 'system' ? '#38bdf8' : '#64748b', marginTop: '4px' }}>
+                {themeMode === 'system' ? 'Match OS Appearance (Active)' : 'Match OS Appearance'}
+              </div>
             </div>
           </div>
         </div>
@@ -117,7 +177,7 @@ export const SettingsWidget: React.FC<SettingsWidgetProps> = ({
             User: <strong style={{ color: '#f1f5f9' }}>Alex Mercer</strong> (alex.mercer@converra.io)
           </div>
           <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-            Workspace: <strong style={{ color: '#f1f5f9' }}>Acme Corp / Core Platform</strong>
+            Workspace: <strong style={{ color: '#f1f5f9' }}>Converra AI Workspace</strong>
           </div>
           <div style={{ fontSize: '13px', color: '#94a3b8' }}>
             NitroStack Version: <strong style={{ color: '#38bdf8' }}>v1.0.0 Enterprise AI Studio</strong>

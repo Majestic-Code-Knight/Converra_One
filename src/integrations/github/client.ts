@@ -3,6 +3,8 @@ import { AuthenticationManagerService } from '../../services/AuthenticationManag
 import { PlatformType } from '../../shared/enums/platform.enum.js';
 import { GitHubNotificationRaw } from './types.js';
 
+import { DemoStoreService } from '../../services/DemoStore.service.js';
+
 export class GitHubClient {
   private rateLimiter: RateLimiterService;
   private authManager: AuthenticationManagerService;
@@ -14,25 +16,27 @@ export class GitHubClient {
 
   public async fetchNotifications(): Promise<GitHubNotificationRaw[]> {
     return this.rateLimiter.executeWithRateLimit(PlatformType.GITHUB, async () => {
+      const enableDemo = process.env.ENABLE_DEMO_MODE === 'true';
       const creds = this.authManager.getCredentials(PlatformType.GITHUB);
-      if (!creds.isAuthorized) {
-        return [
-          {
-            id: 'gh-44102',
-            unread: false,
-            reason: 'ci_passed',
-            updated_at: '2026-07-25T10:45:00Z',
-            subject: {
-              title: '[CI/CD] Build Succeeded: converra-one/main (Commit 8d3a1f9)',
-              url: 'https://api.github.com/repos/converra-labs/converra-one/builds/1842',
-              type: 'CheckSuite'
-            },
-            repository: {
-              full_name: 'converra-labs/converra-one'
-            }
+
+      if (enableDemo || !creds.isAuthorized) {
+        const ghMsgs = DemoStoreService.getInstance().getMessagesByPlatform(PlatformType.GITHUB);
+        return ghMsgs.map((m, idx) => ({
+          id: m.externalId || `4410${idx}`,
+          unread: m.status === 'UNREAD',
+          reason: idx % 2 === 0 ? 'review_requested' : 'ci_passed',
+          updated_at: new Date(m.timestamp).toISOString(),
+          subject: {
+            title: m.subject || '[GitHub Notification]',
+            url: `https://api.github.com/repos/converra-labs/converra-one/builds/${1840 + idx}`,
+            type: idx % 2 === 0 ? 'PullRequest' : 'CheckSuite'
+          },
+          repository: {
+            full_name: 'converra-labs/converra-one'
           }
-        ];
+        }));
       }
+
 
       const res = await fetch('https://api.github.com/notifications', {
         headers: {

@@ -1,1 +1,1 @@
-export * from './PriorityMessagesWidget.js';
+export * from './PriorityMessagesWidget';

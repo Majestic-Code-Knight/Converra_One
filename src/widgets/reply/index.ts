@@ -1,1 +1,1 @@
-export * from './ReplyWidget.js';
+export * from './ReplyWidget';

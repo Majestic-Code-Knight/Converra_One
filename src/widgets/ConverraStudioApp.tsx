@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SidebarWidget, NavTab } from './sidebar/SidebarWidget';
 import { TopNavWidget } from './topnav/TopNavWidget';
 import { DashboardWidget } from './dashboard/DashboardWidget';
@@ -16,20 +16,64 @@ import { ReplyWidget } from './reply/ReplyWidget';
 import { MOCK_MESSAGES } from './mockData';
 import { Message } from '../shared/interfaces/Message.interface';
 
+import { MessageStatus } from '../shared/enums/message.enum';
+
 export const ConverraStudioApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [draftReplyMessage, setDraftReplyMessage] = useState<Message | null>(null);
   const [suggestedText, setSuggestedText] = useState<string>('');
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+  const [theme, setTheme] = useState<'dark' | 'light' | 'system'>('dark');
+
+  const unreadCount = messages.filter((m) => m.status === MessageStatus.UNREAD).length;
+
+  useEffect(() => {
+    const saved = localStorage.getItem('converra_theme') as 'dark' | 'light' | 'system' | null;
+    if (saved) {
+      setTheme(saved);
+    }
+  }, []);
+
+  const getEffectiveTheme = (): 'dark' | 'light' => {
+    if (theme === 'system') {
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        return 'light';
+      }
+      return 'dark';
+    }
+    return theme;
+  };
+
+  const effectiveTheme = getEffectiveTheme();
 
   const handleOpenMessage = (msg: Message) => {
-    setSelectedMessage(msg);
+    const readMsg = { ...msg, status: MessageStatus.READ };
+    setSelectedMessage(readMsg);
+
+    if (msg.status === MessageStatus.UNREAD) {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === msg.id ? { ...m, status: MessageStatus.READ } : m))
+      );
+    }
   };
 
   const handleDraftReply = (msg: Message) => {
     setDraftReplyMessage(msg);
+  };
+
+  const handleSendSuccess = (replyText: string, messageId?: string) => {
+    if (messageId) {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, status: MessageStatus.READ, tags: [...(m.tags || []), 'Replied'] }
+            : m
+        )
+      );
+    }
   };
 
   const handleQuickAction = (actionName: string) => {
@@ -37,10 +81,15 @@ export const ConverraStudioApp: React.FC = () => {
     else if (actionName === 'task') setActiveTab('tasks');
     else if (actionName === 'meeting') setActiveTab('calendar');
     else if (actionName === 'reply') {
-      setDraftReplyMessage(MOCK_MESSAGES[0]);
+      setDraftReplyMessage(messages[0] || MOCK_MESSAGES[0]);
     } else if (actionName === 'refresh') {
       alert('⚡ Collector Agent triggered channel refresh across 6 platforms.');
     }
+  };
+
+  const handleThemeChange = (newTheme: 'dark' | 'light' | 'system') => {
+    setTheme(newTheme);
+    localStorage.setItem('converra_theme', newTheme);
   };
 
   return (
@@ -49,17 +98,18 @@ export const ConverraStudioApp: React.FC = () => {
         display: 'flex',
         width: '100vw',
         height: '100vh',
-        background: '#080c16',
-        color: '#f8fafc',
+        background: effectiveTheme === 'light' ? '#f1f5f9' : '#080c16',
+        color: effectiveTheme === 'light' ? '#0f172a' : '#f8fafc',
         fontFamily: 'system-ui, -apple-system, sans-serif',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        transition: 'background 0.3s ease, color 0.3s ease'
       }}
     >
       {/* 1. Sidebar Navigation Widget */}
       <SidebarWidget
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        unreadCount={4}
+        unreadCount={unreadCount}
         taskCount={3}
         notificationCount={2}
         isCollapsed={isSidebarCollapsed}
@@ -78,11 +128,11 @@ export const ConverraStudioApp: React.FC = () => {
       >
         {/* 2. Top Navigation Widget */}
         <TopNavWidget
-          workspaceName="Acme Corp / Engineering Core"
+          workspaceName="Converra AI Workspace"
           onSearchClick={() => setActiveTab('search')}
           onNotificationsClick={() => setActiveTab('notifications')}
           onProfileClick={() => setShowProfileModal(!showProfileModal)}
-          notificationCount={2}
+          notificationCount={unreadCount}
         />
 
         {/* Dynamic View Area */}
@@ -105,6 +155,7 @@ export const ConverraStudioApp: React.FC = () => {
 
           {activeTab === 'inbox' && (
             <UnifiedInboxWidget
+              messages={messages}
               onOpenMessage={handleOpenMessage}
               onQuickReply={handleDraftReply}
             />
@@ -125,7 +176,12 @@ export const ConverraStudioApp: React.FC = () => {
 
           {activeTab === 'notifications' && <NotificationsWidget />}
 
-          {activeTab === 'settings' && <SettingsWidget />}
+          {activeTab === 'settings' && (
+            <SettingsWidget
+              currentTheme={theme}
+              onThemeChange={handleThemeChange}
+            />
+          )}
         </main>
       </div>
 
@@ -177,6 +233,7 @@ export const ConverraStudioApp: React.FC = () => {
             <ReplyWidget
               originalMessage={draftReplyMessage}
               initialReplyText={suggestedText}
+              onSendSuccess={handleSendSuccess}
               onClose={() => {
                 setDraftReplyMessage(null);
                 setSuggestedText('');

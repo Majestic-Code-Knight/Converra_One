@@ -1,1 +1,1 @@
-export * from './ProfileWidget.js';
+export * from './ProfileWidget';

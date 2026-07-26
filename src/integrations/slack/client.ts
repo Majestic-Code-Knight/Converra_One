@@ -3,6 +3,8 @@ import { AuthenticationManagerService } from '../../services/AuthenticationManag
 import { PlatformType } from '../../shared/enums/platform.enum.js';
 import { SlackMessageRaw } from './types.js';
 
+import { DemoStoreService } from '../../services/DemoStore.service.js';
+
 export class SlackClient {
   private rateLimiter: RateLimiterService;
   private authManager: AuthenticationManagerService;
@@ -14,17 +16,19 @@ export class SlackClient {
 
   public async fetchMessages(): Promise<SlackMessageRaw[]> {
     return this.rateLimiter.executeWithRateLimit(PlatformType.SLACK, async () => {
+      const enableDemo = process.env.ENABLE_DEMO_MODE === 'true';
       const creds = this.authManager.getCredentials(PlatformType.SLACK);
-      if (!creds.isAuthorized) {
-        return [
-          {
-            ts: '1721900000.000100',
-            user: 'usr-devlead',
-            channel: 'C01234567',
-            text: '@alex The release candidate for NitroStack v1.4 hit a memory leak on worker node 3. Need GC parameters review before approving PR #342.'
-          }
-        ];
+
+      if (enableDemo || !creds.isAuthorized) {
+        const slackMsgs = DemoStoreService.getInstance().getMessagesByPlatform(PlatformType.SLACK);
+        return slackMsgs.map((m, idx) => ({
+          ts: `${1721900000 + idx * 3600}.000100`,
+          user: m.sender.id,
+          channel: 'C01234567',
+          text: m.content
+        }));
       }
+
 
       const res = await fetch('https://slack.com/api/conversations.history?channel=C01234567', {
         headers: { Authorization: `Bearer ${creds.accessToken}` }

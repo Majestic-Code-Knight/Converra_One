@@ -13,3 +13,4 @@ export * from './FeatureFlag.service.js';
 export * from './NotificationEngine.service.js';
 export * from './Analytics.service.js';
 export * from './UserPreferences.service.js';
+export * from './DemoStore.service.js';

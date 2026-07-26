@@ -1,1 +1,1 @@
-export * from './UnifiedInboxWidget.js';
+export * from './UnifiedInboxWidget';

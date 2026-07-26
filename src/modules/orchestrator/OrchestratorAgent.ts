@@ -14,6 +14,7 @@ import { ReplyAgent } from '../reply/ReplyAgent.js';
 import { AgentEventBusService } from '../../services/AgentEventBus.service.js';
 import { AgentHealthMonitorService } from '../../services/AgentHealthMonitor.service.js';
 import { AgentMemoryCacheService } from '../../services/AgentMemoryCache.service.js';
+import { DemoStoreService } from '../../services/DemoStore.service.js';
 
 export interface TimelineEntry {
   workflowId: string;
@@ -218,9 +219,11 @@ export class OrchestratorAgent extends BaseAgent<OrchestratorInput, DashboardDat
 
       const urgentCount = scoredMessages.filter(m => m.priority === 'URGENT').length;
 
+      const demoNotifications = DemoStoreService.getInstance().getNotifications();
+
       const dashboardData: DashboardData = {
         metrics: {
-          totalUnreadMessages: scoredMessages.length,
+          totalUnreadMessages: scoredMessages.filter(m => m.status === 'UNREAD').length || scoredMessages.length,
           urgentMessagesCount: urgentCount,
           pendingTasksCount: tasks.length,
           upcomingEventsCount: events.length,
@@ -229,19 +232,10 @@ export class OrchestratorAgent extends BaseAgent<OrchestratorInput, DashboardDat
         recentMessages: scoredMessages,
         priorityTasks: tasks,
         todaysEvents: events,
-        unreadNotifications: [
-          {
-            id: 'notif-01',
-            type: 'MESSAGE_URGENT' as any,
-            title: 'Urgent Email from Prof. Evelyn Vance',
-            body: 'CS340 Raft consensus blueprint requires immediate timeout adjustment prior to 3 PM call.',
-            priority: 'URGENT' as any,
-            isRead: false,
-            createdAt: new Date()
-          }
-        ],
+        unreadNotifications: demoNotifications,
         lastRefreshedAt: new Date()
       };
+
 
       this.memoryCache.set('dashboard_current', dashboardData, 60);
 

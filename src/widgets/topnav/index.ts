@@ -1,1 +1,1 @@
-export * from './TopNavWidget.js';
+export * from './TopNavWidget';

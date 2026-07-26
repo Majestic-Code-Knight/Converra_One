@@ -1,10 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK_MESSAGES } from '../mockData.js';
-import { Message } from '../../shared/interfaces/Message.interface.js';
-import { PlatformType } from '../../shared/enums/platform.enum.js';
-import { MessageStatus } from '../../shared/enums/message.enum.js';
+import { MOCK_MESSAGES } from '../mockData';
+import { Message } from '../../shared/interfaces/Message.interface';
+import { PlatformType } from '../../shared/enums/platform.enum';
+import { MessageStatus } from '../../shared/enums/message.enum';
+
+function formatTimeString(dateInput: Date | string): string {
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '';
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+}
 
 export interface UnifiedInboxWidgetProps {
   messages?: Message[];
@@ -17,16 +27,27 @@ export const UnifiedInboxWidget: React.FC<UnifiedInboxWidgetProps> = ({
   onOpenMessage,
   onQuickReply
 }) => {
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('ALL');
+  const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const filteredMessages = messages.filter((msg) => {
-    const matchesPlatform = selectedPlatform === 'ALL' || msg.platform === selectedPlatform;
+    let matchesCategory = true;
+    if (selectedFilter === 'UNREAD') {
+      matchesCategory = msg.status === MessageStatus.UNREAD;
+    } else if (selectedFilter === 'READ') {
+      matchesCategory = msg.status === MessageStatus.READ;
+    } else if (selectedFilter === 'ARCHIVED') {
+      matchesCategory = msg.status === MessageStatus.ARCHIVED;
+    } else if (selectedFilter !== 'ALL') {
+      matchesCategory = msg.platform === selectedFilter;
+    }
+
     const matchesSearch =
       msg.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       msg.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
       msg.sender.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesPlatform && matchesSearch;
+
+    return matchesCategory && matchesSearch;
   });
 
   const getPlatformIcon = (platform: PlatformType) => {
@@ -98,18 +119,18 @@ export const UnifiedInboxWidget: React.FC<UnifiedInboxWidgetProps> = ({
 
         {/* Category Tabs */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-          {['ALL', 'GMAIL', 'SLACK', 'DISCORD', 'GITHUB', 'NOTION'].map((p) => (
+          {['ALL', 'UNREAD', 'READ', 'ARCHIVED', 'GMAIL', 'SLACK', 'GITHUB', 'NOTION'].map((p) => (
             <button
               key={p}
-              onClick={() => setSelectedPlatform(p)}
+              onClick={() => setSelectedFilter(p)}
               style={{
-                background: selectedPlatform === p ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                border: selectedPlatform === p ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)',
-                color: selectedPlatform === p ? '#38bdf8' : '#94a3b8',
+                background: selectedFilter === p ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                border: selectedFilter === p ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)',
+                color: selectedFilter === p ? '#38bdf8' : '#94a3b8',
                 borderRadius: '8px',
                 padding: '4px 12px',
                 fontSize: '12px',
-                fontWeight: selectedPlatform === p ? 600 : 500,
+                fontWeight: selectedFilter === p ? 600 : 500,
                 cursor: 'pointer'
               }}
             >
@@ -183,7 +204,7 @@ export const UnifiedInboxWidget: React.FC<UnifiedInboxWidgetProps> = ({
                       {priority.label}
                     </span>
                     <span style={{ fontSize: '10px', color: '#64748b', marginLeft: 'auto' }}>
-                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatTimeString(msg.timestamp)}
                     </span>
                   </div>
 

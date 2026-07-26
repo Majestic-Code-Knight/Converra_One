@@ -1,1 +1,1 @@
-export * from './NotificationsWidget.js';
+export * from './NotificationsWidget';

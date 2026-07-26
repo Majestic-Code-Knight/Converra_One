@@ -1,12 +1,22 @@
 'use client';
 
-import React from 'react';
-import { Message } from '../../shared/interfaces/Message.interface.js';
+import { Message } from '../../shared/interfaces/Message.interface';
+
 
 export interface MessageDetailsWidgetProps {
   message: Message;
   onClose?: () => void;
   onSelectSuggestedReply?: (replyText: string) => void;
+}
+
+function formatTimeString(dateInput: Date | string): string {
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '';
+  const hours = d.getUTCHours();
+  const minutes = d.getUTCMinutes().toString().padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
 }
 
 export const MessageDetailsWidget: React.FC<MessageDetailsWidgetProps> = ({
@@ -124,7 +134,7 @@ export const MessageDetailsWidget: React.FC<MessageDetailsWidgetProps> = ({
                   {message.sender.name}
                 </div>
                 <div style={{ fontSize: '11px', color: '#64748b' }}>
-                  {message.sender.email || message.platform} • {new Date(message.timestamp).toLocaleString()}
+                  {message.sender.email || message.platform} • {formatTimeString(message.timestamp)}
                 </div>
               </div>
             </div>

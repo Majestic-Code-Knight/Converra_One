@@ -3,6 +3,8 @@ import { AuthenticationManagerService } from '../../services/AuthenticationManag
 import { PlatformType } from '../../shared/enums/platform.enum.js';
 import { DiscordMessageRaw } from './types.js';
 
+import { DemoStoreService } from '../../services/DemoStore.service.js';
+
 export class DiscordClient {
   private rateLimiter: RateLimiterService;
   private authManager: AuthenticationManagerService;
@@ -14,18 +16,20 @@ export class DiscordClient {
 
   public async fetchMessages(): Promise<DiscordMessageRaw[]> {
     return this.rateLimiter.executeWithRateLimit(PlatformType.DISCORD, async () => {
+      const enableDemo = process.env.ENABLE_DEMO_MODE === 'true';
       const creds = this.authManager.getCredentials(PlatformType.DISCORD);
-      if (!creds.isAuthorized) {
-        return [
-          {
-            id: '10928',
-            channel_id: 'chn-01',
-            content: 'Hey Alex! I just updated the Figma design tokens for dark glassmorphism gradients and card border highlights.',
-            timestamp: '2026-07-25T11:20:00Z',
-            author: { id: 'usr-designer', username: 'Marcus Brody' }
-          }
-        ];
+
+      if (enableDemo || !creds.isAuthorized) {
+        const dscMsgs = DemoStoreService.getInstance().getMessagesByPlatform(PlatformType.DISCORD);
+        return dscMsgs.map(m => ({
+          id: m.externalId || m.id,
+          channel_id: 'chn-01',
+          content: m.content,
+          timestamp: new Date(m.timestamp).toISOString(),
+          author: { id: m.sender.id, username: m.sender.name }
+        }));
       }
+
 
       const res = await fetch('https://discord.com/api/v10/channels/12345/messages', {
         headers: { Authorization: `Bot ${creds.accessToken}` }

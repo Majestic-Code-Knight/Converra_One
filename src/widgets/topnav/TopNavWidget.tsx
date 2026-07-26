@@ -11,7 +11,7 @@ export interface TopNavWidgetProps {
 }
 
 export const TopNavWidget: React.FC<TopNavWidgetProps> = ({
-  workspaceName = 'Acme Corp / Engineering',
+  workspaceName = 'Converra AI Workspace',
   onSearchClick,
   onNotificationsClick,
   onProfileClick,

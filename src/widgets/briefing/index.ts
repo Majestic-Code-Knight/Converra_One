@@ -1,1 +1,1 @@
-export * from './BriefingWidget.js';
+export * from './BriefingWidget';

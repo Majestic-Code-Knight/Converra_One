@@ -1,1 +1,1 @@
-export * from './TaskWidget.js';
+export * from './TaskWidget';

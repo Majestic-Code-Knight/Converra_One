@@ -1,3 +1,3 @@
-export * from './LoadingWidget.js';
-export * from './EmptyStateWidget.js';
-export * from './ErrorWidget.js';
+export * from './LoadingWidget';
+export * from './EmptyStateWidget';
+export * from './ErrorWidget';

@@ -1,1 +1,1 @@
-export * from './CalendarWidget.js';
+export * from './CalendarWidget';

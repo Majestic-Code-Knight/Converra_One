@@ -1,1 +1,1 @@
-export * from './SettingsWidget.js';
+export * from './SettingsWidget';

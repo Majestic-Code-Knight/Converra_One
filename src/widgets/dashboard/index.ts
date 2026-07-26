@@ -1,1 +1,1 @@
-export * from './DashboardWidget.js';
+export * from './DashboardWidget';

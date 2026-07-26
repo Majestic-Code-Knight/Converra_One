@@ -1,1 +1,1 @@
-export * from './MessageDetailsWidget.js';
+export * from './MessageDetailsWidget';

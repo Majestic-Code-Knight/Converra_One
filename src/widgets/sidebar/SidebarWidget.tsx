@@ -28,8 +28,6 @@ export const SidebarWidget: React.FC<SidebarWidgetProps> = ({
     { id: 'inbox', label: 'Unified Inbox', icon: '📥', badge: unreadCount },
     { id: 'tasks', label: 'Tasks', icon: '📋', badge: taskCount },
     { id: 'calendar', label: 'Calendar', icon: '📅' },
-    { id: 'search', label: 'AI Search', icon: '🔍' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔', badge: notificationCount },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
 
@@ -50,7 +48,7 @@ export const SidebarWidget: React.FC<SidebarWidgetProps> = ({
         zIndex: 100
       }}
     >
-      {/* Brand Header */}
+      {/* Brand Header & Futuristic Toggle */}
       <div>
         <div
           style={{
@@ -92,24 +90,49 @@ export const SidebarWidget: React.FC<SidebarWidgetProps> = ({
               </div>
             )}
           </div>
-          {onToggleCollapse && !isCollapsed && (
+          {onToggleCollapse && (
             <button
               onClick={onToggleCollapse}
+              aria-label={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: '#94a3b8',
-                borderRadius: '6px',
-                width: '24px',
-                height: '24px',
+                position: 'relative',
+                background: 'rgba(6, 182, 212, 0.1)',
+                border: '1px solid rgba(56, 189, 248, 0.4)',
+                color: '#38bdf8',
+                borderRadius: '8px',
+                width: '28px',
+                height: '28px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px'
+                fontSize: '13px',
+                backdropFilter: 'blur(12px)',
+                boxShadow: '0 0 12px rgba(56, 189, 248, 0.25)',
+                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                outline: 'none'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(6, 182, 212, 0.25)';
+                e.currentTarget.style.boxShadow = '0 0 18px rgba(56, 189, 248, 0.5)';
+                e.currentTarget.style.borderColor = '#38bdf8';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(6, 182, 212, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(56, 189, 248, 0.25)';
+                e.currentTarget.style.borderColor = 'rgba(56, 189, 248, 0.4)';
               }}
             >
-              ◀
+              <span
+                style={{
+                  display: 'inline-block',
+                  transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                }}
+              >
+                ◀
+              </span>
             </button>
           )}
         </div>
@@ -165,42 +188,34 @@ export const SidebarWidget: React.FC<SidebarWidgetProps> = ({
         </nav>
       </div>
 
-      {/* User Profile Footer */}
+      {/* Workspace Status Footer */}
       <div
         style={{
           borderTop: '1px solid rgba(255, 255, 255, 0.06)',
           paddingTop: '16px',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          justifyContent: isCollapsed ? 'center' : 'flex-start',
+          gap: '10px'
         }}
       >
-        <div style={{ position: 'relative' }}>
-          <img
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
-            alt="Alex Mercer"
-            style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #38bdf8' }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              right: 0,
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              background: '#10b981',
-              border: '2px solid #080c16'
-            }}
-          />
-        </div>
+        <span
+          style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            background: '#10b981',
+            boxShadow: '0 0 10px #10b981',
+            flexShrink: 0
+          }}
+        />
         {!isCollapsed && (
           <div style={{ overflow: 'hidden' }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#f8fafc', whiteSpace: 'nowrap' }}>
-              Alex Mercer
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#f8fafc', whiteSpace: 'nowrap' }}>
+              Converra One Studio
             </div>
-            <div style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap' }}>
-              Principal UI Architect
+            <div style={{ fontSize: '10px', color: '#64748b', whiteSpace: 'nowrap' }}>
+              Connected to MCP Engine
             </div>
           </div>
         )}

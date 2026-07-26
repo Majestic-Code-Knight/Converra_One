@@ -3,6 +3,8 @@ import { AuthenticationManagerService } from '../../services/AuthenticationManag
 import { PlatformType } from '../../shared/enums/platform.enum.js';
 import { NotionPageRaw } from './types.js';
 
+import { DemoStoreService } from '../../services/DemoStore.service.js';
+
 export class NotionClient {
   private rateLimiter: RateLimiterService;
   private authManager: AuthenticationManagerService;
@@ -14,19 +16,21 @@ export class NotionClient {
 
   public async fetchPages(): Promise<NotionPageRaw[]> {
     return this.rateLimiter.executeWithRateLimit(PlatformType.NOTION, async () => {
+      const enableDemo = process.env.ENABLE_DEMO_MODE === 'true';
       const creds = this.authManager.getCredentials(PlatformType.NOTION);
-      if (!creds.isAuthorized) {
-        return [
-          {
-            id: '77412',
-            created_time: '2026-07-25T11:55:00Z',
-            last_edited_time: '2026-07-25T11:55:00Z',
-            properties: {
-              Title: { title: [{ plain_text: 'Q3 Product Roadmap & Agentic AI Milestone Update' }] }
-            }
+
+      if (enableDemo || !creds.isAuthorized) {
+        const pages = DemoStoreService.getInstance().getNotionPages();
+        return pages.map(p => ({
+          id: p.id,
+          created_time: new Date(p.lastEdited).toISOString(),
+          last_edited_time: new Date(p.lastEdited).toISOString(),
+          properties: {
+            Title: { title: [{ plain_text: p.title }] }
           }
-        ];
+        }));
       }
+
 
       const res = await fetch('https://api.notion.com/v1/search', {
         method: 'POST',
